@@ -104,14 +104,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 width: 100,
                 height: 100,
                 child: DraggableCard(
+                  key: Key("${_counter + 1}"),
                   displayNumber: _counter + 1,
                 )),
             Container(
                 width: 100,
                 height: 100,
                 child: DraggableCard(
-                  displayNumber: _counter,
-                )),
+                    key: Key("$_counter"),
+                    displayNumber: _counter,
+                    onCardSwipedAway: () {
+                      setState(() {
+                        _counter++;
+                      });
+                    })),
           ],
         ),
       ),

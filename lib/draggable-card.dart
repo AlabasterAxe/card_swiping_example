@@ -6,8 +6,10 @@ import 'package:flutter/widgets.dart';
 
 class DraggableCard extends StatefulWidget {
   final int displayNumber;
+  final Function onCardSwipedAway;
 
-  DraggableCard({Key key, this.displayNumber}) : super(key: key);
+  DraggableCard({Key key, this.displayNumber, this.onCardSwipedAway})
+      : super(key: key);
 
   @override
   _DraggableCardState createState() => _DraggableCardState();
@@ -21,6 +23,8 @@ class _DraggableCardState extends State<DraggableCard>
 
   Offset targetOffset = Offset(0, 0);
 
+  double slideDirection;
+
   AnimationController cardSwipeAnimationController;
 
   @override
@@ -30,12 +34,26 @@ class _DraggableCardState extends State<DraggableCard>
     cardSwipeAnimationController = new AnimationController(vsync: this);
   }
 
+  Offset _getAnimatedOffset() {
+    if (cardSwipeAnimationController.isAnimating) {
+      if (slideDirection != null) {
+        return Offset.fromDirection(
+            slideDirection, cardSwipeAnimationController.value);
+      } else {
+        return Offset.lerp(dragOffset - dragStartOffset, targetOffset,
+            cardSwipeAnimationController.value);
+      }
+    } else {
+      return dragOffset - dragStartOffset;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     double screenWidth = screenSize.width;
 
-    log("${cardSwipeAnimationController.value}");
+    // log("${cardSwipeAnimationController.value}");
 
     return Container(
         child: GestureDetector(
@@ -50,68 +68,33 @@ class _DraggableCardState extends State<DraggableCard>
         cardSwipeAnimationController.stop();
       },
       onPanEnd: (DragEndDetails details) {
-        Offset relativeDragOffset = dragOffset - dragStartOffset;
-        if (relativeDragOffset.dy > screenSize.height / 3 &&
-            details.velocity.pixelsPerSecond.dy > 80) {
-          var sim = FrictionSimulation(
-              10, 0, details.velocity.pixelsPerSecond.dy / 80);
-          targetOffset = Offset(0, screenSize.height);
+        var sim = FrictionSimulation(
+            10, dragOffset.distance, details.velocity.pixelsPerSecond.distance);
+        if (sim.finalX.abs() > screenSize.height / 2) {
+          slideDirection = details.velocity.pixelsPerSecond.direction;
           setState(() {
-            cardSwipeAnimationController = AnimationController(vsync: this);
+            cardSwipeAnimationController =
+                AnimationController.unbounded(vsync: this);
             cardSwipeAnimationController.animateWith(sim);
             cardSwipeAnimationController.addListener(() {
-              if (cardSwipeAnimationController.value > .9) {
+              if (cardSwipeAnimationController.value.abs() >
+                  sim.finalX.abs() - 1) {
                 cardSwipeAnimationController.stop(canceled: false);
                 targetOffset = Offset(0, 0);
-                // finishCurrentCardAndShowNext(true);
-              }
-            });
-          });
-        } else if (relativeDragOffset.dx > screenWidth / 4 &&
-            relativeDragOffset.dx + details.velocity.pixelsPerSecond.dx >
-                screenWidth / 2 &&
-            details.velocity.pixelsPerSecond.dx > 80) {
-          var sim = FrictionSimulation(
-              10, 0, details.velocity.pixelsPerSecond.dx / 80);
-          targetOffset = Offset(screenWidth, 0);
-          setState(() {
-            cardSwipeAnimationController = AnimationController(vsync: this);
-            cardSwipeAnimationController.animateWith(sim);
-            cardSwipeAnimationController.addListener(() {
-              if (cardSwipeAnimationController.value > .9) {
-                cardSwipeAnimationController.stop(canceled: false);
-                targetOffset = Offset(0, 0);
-                // finishCurrentCardAndShowNext(false);
-              }
-            });
-          });
-        } else if (relativeDragOffset.dx < -screenWidth / 4 &&
-            relativeDragOffset.dx + details.velocity.pixelsPerSecond.dx <
-                -screenWidth / 2 &&
-            details.velocity.pixelsPerSecond.dx < -80) {
-          var sim = FrictionSimulation(
-              10, 0, -(details.velocity.pixelsPerSecond.dx / 80));
-          targetOffset = Offset(-screenWidth, 0);
-          setState(() {
-            cardSwipeAnimationController = AnimationController(vsync: this);
-            cardSwipeAnimationController.animateWith(sim);
-            cardSwipeAnimationController.addListener(() {
-              if (cardSwipeAnimationController.value > .9) {
-                cardSwipeAnimationController.stop(canceled: false);
-                targetOffset = Offset(0, 0);
-                // finishCurrentCardAndShowNext(false);
+                widget.onCardSwipedAway();
               }
             });
           });
         } else {
+          slideDirection = null;
           const spring = SpringDescription(
             mass: 30,
             stiffness: 1,
             damping: 1,
           );
 
-          final simulation = SpringSimulation(
-              spring, 0, 1, -details.primaryVelocity / screenWidth);
+          final simulation = SpringSimulation(spring, 0, 1,
+              -details.velocity.pixelsPerSecond.distance / screenWidth);
 
           setState(() {
             cardSwipeAnimationController = AnimationController(vsync: this);
@@ -132,11 +115,10 @@ class _DraggableCardState extends State<DraggableCard>
       child: AnimatedBuilder(
           animation: cardSwipeAnimationController,
           builder: (context, snapshot) {
+            Offset translateOffset = _getAnimatedOffset();
+
             return Transform.translate(
-                offset: cardSwipeAnimationController.isAnimating
-                    ? Offset.lerp(dragOffset - dragStartOffset, targetOffset,
-                        cardSwipeAnimationController.value)
-                    : dragOffset - dragStartOffset,
+                offset: translateOffset,
                 child: Card(
                     child: Center(
                         child: Text("${widget.displayNumber}",
