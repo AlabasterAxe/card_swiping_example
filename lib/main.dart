@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'draggable-card.dart';
+import 'sliding-block-example.dart';
 
 void main() {
   runApp(MyApp());
@@ -80,47 +81,48 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       backgroundColor: Colors.amber,
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Stack(
-          alignment: Alignment.center,
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          children: <Widget>[
-            Container(
-                width: 100,
-                height: 100,
-                child: DraggableCard(
-                  key: Key("${_counter + 1}"),
-                  displayNumber: _counter + 1,
-                )),
-            Container(
-                width: 100,
-                height: 100,
-                child: DraggableCard(
-                    key: Key("$_counter"),
-                    displayNumber: _counter,
-                    onCardSwipedAway: () {
-                      setState(() {
-                        _counter++;
-                      });
-                    })),
-          ],
-        ),
-      ),
+      body: SlidingBlockExample(),
+      // body: Center(
+      //   // Center is a layout widget. It takes a single child and positions it
+      //   // in the middle of the parent.
+      //   child: Stack(
+      //     alignment: Alignment.center,
+      //     // Column is also a layout widget. It takes a list of children and
+      //     // arranges them vertically. By default, it sizes itself to fit its
+      //     // children horizontally, and tries to be as tall as its parent.
+      //     //
+      //     // Invoke "debug painting" (press "p" in the console, choose the
+      //     // "Toggle Debug Paint" action from the Flutter Inspector in Android
+      //     // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+      //     // to see the wireframe for each widget.
+      //     //
+      //     // Column has various properties to control how it sizes itself and
+      //     // how it positions its children. Here we use mainAxisAlignment to
+      //     // center the children vertically; the main axis here is the vertical
+      //     // axis because Columns are vertical (the cross axis would be
+      //     // horizontal).
+      //     children: <Widget>[
+      //       Container(
+      //           width: 100,
+      //           height: 100,
+      //           child: DraggableCard(
+      //             key: Key("${_counter + 1}"),
+      //             displayNumber: _counter + 1,
+      //           )),
+      //       Container(
+      //           width: 100,
+      //           height: 100,
+      //           child: DraggableCard(
+      //               key: Key("$_counter"),
+      //               displayNumber: _counter,
+      //               onCardSwipedAway: () {
+      //                 setState(() {
+      //                   _counter++;
+      //                 });
+      //               })),
+      //     ],
+      //   ),
+      // ),
     );
   }
 }

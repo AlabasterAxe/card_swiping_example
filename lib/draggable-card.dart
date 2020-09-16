@@ -53,8 +53,6 @@ class _DraggableCardState extends State<DraggableCard>
     Size screenSize = MediaQuery.of(context).size;
     double screenWidth = screenSize.width;
 
-    // log("${cardSwipeAnimationController.value}");
-
     return Container(
         child: GestureDetector(
       onPanUpdate: (DragUpdateDetails details) {
