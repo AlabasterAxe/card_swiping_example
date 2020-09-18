@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 
@@ -12,63 +10,94 @@ class SlidingBlockExample extends StatefulWidget {
 
 class _SlidingBlockExampleState extends State<SlidingBlockExample>
     with TickerProviderStateMixin {
-  AnimationController blockSlideAnimationController;
+  AnimationController blockAnimationController;
+  double drag = 1;
+  double position = 1;
+  double velocity = 1;
 
   @override
   void initState() {
     super.initState();
-    blockSlideAnimationController = AnimationController.unbounded(vsync: this);
+
+    blockAnimationController = AnimationController.unbounded(vsync: this);
   }
 
   void _nudgeBlock() {
-    Simulation sim = FrictionSimulation(.7, 10, 10);
-    blockSlideAnimationController.animateWith(sim);
+    FrictionSimulation nonMovingSimulation =
+        FrictionSimulation(drag, position, velocity);
+    blockAnimationController.animateWith(nonMovingSimulation);
   }
 
-  void _reset() {
-    Simulation sim = FrictionSimulation(0, 0, 0);
-    blockSlideAnimationController.animateWith(sim);
+  void _resetBlock() {
+    FrictionSimulation nonMovingSimulation = FrictionSimulation(0, 0, 0);
+    blockAnimationController.animateWith(nonMovingSimulation);
   }
 
-  @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     return Stack(
       alignment: Alignment.center,
       children: [
         Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: screenSize.height / 3,
-          child: Container(color: Colors.blue),
-        ),
+            top: 0,
+            child: Column(
+              children: [
+                Slider(
+                    min: 0.0,
+                    max: 2,
+                    value: drag,
+                    onChanged: (val) {
+                      setState(() {
+                        drag = val;
+                      });
+                    }),
+                Slider(
+                    min: 0.0,
+                    max: 80,
+                    value: position,
+                    onChanged: (val) {
+                      setState(() {
+                        position = val;
+                      });
+                    }),
+                Slider(
+                    min: 0.0,
+                    max: 200,
+                    value: velocity,
+                    onChanged: (val) {
+                      setState(() {
+                        velocity = val;
+                      });
+                    })
+              ],
+            )),
+        Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: screenSize.height / 3,
+            child: Container(color: Colors.blue)),
         AnimatedBuilder(
-            animation: blockSlideAnimationController,
+            animation: blockAnimationController,
             builder: (context, snapshot) {
               return Positioned(
-                bottom: screenSize.height / 3,
-                left: screenSize.width / 4 -
-                    25 +
-                    blockSlideAnimationController.value,
-                width: 50,
                 height: 50,
+                width: 50,
+                bottom: screenSize.height / 3,
+                left:
+                    screenSize.width / 4 - 25 + blockAnimationController.value,
                 child: Container(color: Colors.red),
               );
             }),
         Positioned(
             bottom: screenSize.height / 6,
-            child: Row(
+            child: Column(
               children: [
-                RaisedButton(
-                  child: Text("NUDGE"),
-                  onPressed: _nudgeBlock,
-                ),
-                SizedBox(width: 20),
-                RaisedButton(
-                  child: Text("RESET"),
-                  onPressed: _reset,
-                )
+                Row(children: [
+                  RaisedButton(child: Text("NUDGE"), onPressed: _nudgeBlock),
+                  SizedBox(width: 20),
+                  RaisedButton(child: Text("RESET"), onPressed: _resetBlock),
+                ]),
               ],
             ))
       ],
