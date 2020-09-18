@@ -13,7 +13,7 @@ class _SlidingBlockExampleState extends State<SlidingBlockExample>
   AnimationController blockAnimationController;
   double drag = 1;
   double position = 1;
-  double velocity = 1;
+  double velocity = 100;
 
   @override
   void initState() {
