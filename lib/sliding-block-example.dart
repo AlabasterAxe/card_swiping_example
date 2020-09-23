@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 
+import 'spring-simulation-chart.dart';
+
 class SlidingBlockExample extends StatefulWidget {
   SlidingBlockExample({Key key}) : super(key: key);
 
@@ -11,26 +13,53 @@ class SlidingBlockExample extends StatefulWidget {
 class _SlidingBlockExampleState extends State<SlidingBlockExample>
     with TickerProviderStateMixin {
   AnimationController blockAnimationController;
-  double drag = 1;
-  double position = 1;
-  double velocity = 100;
+  double mass = 5;
+  double stiffness = 5;
+  double damping = 0.5;
+
+  SpringSimulation displayedSpringSimulation;
+  bool blockIsSpringing = false;
+  DateTime springingStartTime;
 
   @override
   void initState() {
     super.initState();
 
     blockAnimationController = AnimationController.unbounded(vsync: this);
+    _updateSpringSimulation();
   }
 
   void _nudgeBlock() {
-    FrictionSimulation nonMovingSimulation =
-        FrictionSimulation(drag, position, velocity);
-    blockAnimationController.animateWith(nonMovingSimulation);
+    FrictionSimulation nudgeSimulation = FrictionSimulation(
+        .2, blockAnimationController.value, 320,
+        tolerance: Tolerance(distance: .1, velocity: .1));
+    blockAnimationController.animateWith(nudgeSimulation);
+    blockIsSpringing = false;
+    print(nudgeSimulation.finalX);
   }
 
   void _resetBlock() {
-    FrictionSimulation nonMovingSimulation = FrictionSimulation(0, 0, 0);
+    FrictionSimulation nonMovingSimulation = FrictionSimulation(0, 0, 0,
+        tolerance: Tolerance(distance: .1, velocity: .1));
     blockAnimationController.animateWith(nonMovingSimulation);
+    blockIsSpringing = false;
+  }
+
+  void _springBack() {
+    SpringDescription spring =
+        SpringDescription(mass: mass, stiffness: stiffness, damping: damping);
+    SpringSimulation springBackSimulation = SpringSimulation(
+        spring, blockAnimationController.value, 0, 0,
+        tolerance: Tolerance(distance: .1, velocity: .1));
+    blockAnimationController.animateWith(springBackSimulation);
+    blockIsSpringing = true;
+    springingStartTime = DateTime.now();
+  }
+
+  void _updateSpringSimulation() {
+    SpringDescription spring =
+        SpringDescription(mass: mass, stiffness: stiffness, damping: damping);
+    displayedSpringSimulation = SpringSimulation(spring, 199, 0, 0);
   }
 
   Widget build(BuildContext context) {
@@ -42,33 +71,69 @@ class _SlidingBlockExampleState extends State<SlidingBlockExample>
             top: 0,
             child: Column(
               children: [
-                Slider(
-                    min: 0.0,
-                    max: 2,
-                    value: drag,
-                    onChanged: (val) {
-                      setState(() {
-                        drag = val;
-                      });
+                Row(
+                  children: [
+                    Text("Mass"),
+                    Slider(
+                        min: 0.0,
+                        max: 10,
+                        value: mass,
+                        onChanged: (val) {
+                          setState(() {
+                            mass = val;
+                            _updateSpringSimulation();
+                          });
+                        }),
+                    Text(mass.toStringAsFixed(2)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Text("Stiffness"),
+                    Slider(
+                        min: 0.0,
+                        max: 80,
+                        value: stiffness,
+                        onChanged: (val) {
+                          setState(() {
+                            stiffness = val;
+                            _updateSpringSimulation();
+                          });
+                        }),
+                    Text(stiffness.toStringAsFixed(2)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Text("Damping"),
+                    Slider(
+                        min: 0.0,
+                        max: 2,
+                        value: damping,
+                        onChanged: (val) {
+                          setState(() {
+                            damping = val;
+                            _updateSpringSimulation();
+                          });
+                        }),
+                    Text(damping.toStringAsFixed(2)),
+                  ],
+                ),
+                SizedBox(height: 20),
+                AnimatedBuilder(
+                    animation: blockAnimationController,
+                    builder: (context, snapshot) {
+                      return Container(
+                          width: 200,
+                          height: 100,
+                          child: SpringSimulationChart(
+                            simulation: displayedSpringSimulation,
+                            isSpringing: blockIsSpringing,
+                            elapsedTime: blockAnimationController.isAnimating
+                                ? blockAnimationController.lastElapsedDuration
+                                : Duration(),
+                          ));
                     }),
-                Slider(
-                    min: 0.0,
-                    max: 80,
-                    value: position,
-                    onChanged: (val) {
-                      setState(() {
-                        position = val;
-                      });
-                    }),
-                Slider(
-                    min: 0.0,
-                    max: 200,
-                    value: velocity,
-                    onChanged: (val) {
-                      setState(() {
-                        velocity = val;
-                      });
-                    })
               ],
             )),
         Positioned(
@@ -97,6 +162,9 @@ class _SlidingBlockExampleState extends State<SlidingBlockExample>
                   RaisedButton(child: Text("NUDGE"), onPressed: _nudgeBlock),
                   SizedBox(width: 20),
                   RaisedButton(child: Text("RESET"), onPressed: _resetBlock),
+                  SizedBox(width: 20),
+                  RaisedButton(
+                      child: Text("SPRING BACK"), onPressed: _springBack),
                 ]),
               ],
             ))
