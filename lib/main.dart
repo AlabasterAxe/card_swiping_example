@@ -1,3 +1,4 @@
+import 'package:card_swiping_example/swipeable-card-example.dart';
 import 'package:flutter/material.dart';
 
 import 'sliding-block-example.dart';
@@ -37,7 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       backgroundColor: Colors.amber[100],
-      body: SlidingBlockExample(),
+      body: SwipeableCardExample(),
     );
   }
 }

@@ -21,11 +21,13 @@ class _SpringSimulationChartPainter extends CustomPainter {
 
     Paint black = Paint()
       ..color = Colors.black
-      ..style = PaintingStyle.stroke;
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
 
     Paint red = Paint()
       ..color = Colors.red
-      ..style = PaintingStyle.stroke;
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
 
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), white);
 

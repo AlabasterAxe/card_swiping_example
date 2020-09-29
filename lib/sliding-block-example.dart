@@ -1,7 +1,6 @@
+import 'package:card_swiping_example/spring-simulation-chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
-
-import 'spring-simulation-chart.dart';
 
 class SlidingBlockExample extends StatefulWidget {
   SlidingBlockExample({Key key}) : super(key: key);
@@ -14,52 +13,53 @@ class _SlidingBlockExampleState extends State<SlidingBlockExample>
     with TickerProviderStateMixin {
   AnimationController blockAnimationController;
   double mass = 5;
-  double stiffness = 5;
-  double damping = 0.5;
+  double stiffness = 50;
+  double damping = 1;
 
   SpringSimulation displayedSpringSimulation;
-  bool blockIsSpringing = false;
-  DateTime springingStartTime;
+  bool isSpringing = false;
 
   @override
   void initState() {
     super.initState();
 
     blockAnimationController = AnimationController.unbounded(vsync: this);
-    _updateSpringSimulation();
+
+    _recalculateDisplayedSpringSimulation();
   }
 
   void _nudgeBlock() {
     FrictionSimulation nudgeSimulation = FrictionSimulation(
-        .2, blockAnimationController.value, 320,
-        tolerance: Tolerance(distance: .1, velocity: .1));
+      0.2,
+      0,
+      320,
+    );
     blockAnimationController.animateWith(nudgeSimulation);
-    blockIsSpringing = false;
-    print(nudgeSimulation.finalX);
+    isSpringing = false;
   }
 
   void _resetBlock() {
-    FrictionSimulation nonMovingSimulation = FrictionSimulation(0, 0, 0,
-        tolerance: Tolerance(distance: .1, velocity: .1));
+    FrictionSimulation nonMovingSimulation = FrictionSimulation(0, 0, 0);
     blockAnimationController.animateWith(nonMovingSimulation);
-    blockIsSpringing = false;
+    isSpringing = false;
   }
 
   void _springBack() {
-    SpringDescription spring =
+    SpringDescription springDesc =
         SpringDescription(mass: mass, stiffness: stiffness, damping: damping);
-    SpringSimulation springBackSimulation = SpringSimulation(
-        spring, blockAnimationController.value, 0, 0,
-        tolerance: Tolerance(distance: .1, velocity: .1));
-    blockAnimationController.animateWith(springBackSimulation);
-    blockIsSpringing = true;
-    springingStartTime = DateTime.now();
+    SpringSimulation springSim =
+        SpringSimulation(springDesc, blockAnimationController.value, 0, 0);
+    blockAnimationController.animateWith(springSim);
+    isSpringing = true;
   }
 
-  void _updateSpringSimulation() {
-    SpringDescription spring =
+  void _recalculateDisplayedSpringSimulation() {
+    SpringDescription desc =
         SpringDescription(mass: mass, stiffness: stiffness, damping: damping);
-    displayedSpringSimulation = SpringSimulation(spring, 199, 0, 0);
+
+    setState(() {
+      displayedSpringSimulation = SpringSimulation(desc, 200, 0, 0);
+    });
   }
 
   Widget build(BuildContext context) {
@@ -81,10 +81,10 @@ class _SlidingBlockExampleState extends State<SlidingBlockExample>
                         onChanged: (val) {
                           setState(() {
                             mass = val;
-                            _updateSpringSimulation();
+                            _recalculateDisplayedSpringSimulation();
                           });
                         }),
-                    Text(mass.toStringAsFixed(2)),
+                    Text("${mass.toStringAsFixed(2)}")
                   ],
                 ),
                 Row(
@@ -92,15 +92,15 @@ class _SlidingBlockExampleState extends State<SlidingBlockExample>
                     Text("Stiffness"),
                     Slider(
                         min: 0.0,
-                        max: 80,
+                        max: 100,
                         value: stiffness,
                         onChanged: (val) {
                           setState(() {
                             stiffness = val;
-                            _updateSpringSimulation();
+                            _recalculateDisplayedSpringSimulation();
                           });
                         }),
-                    Text(stiffness.toStringAsFixed(2)),
+                    Text("${stiffness.toStringAsFixed(2)}")
                   ],
                 ),
                 Row(
@@ -113,27 +113,28 @@ class _SlidingBlockExampleState extends State<SlidingBlockExample>
                         onChanged: (val) {
                           setState(() {
                             damping = val;
-                            _updateSpringSimulation();
+                            _recalculateDisplayedSpringSimulation();
                           });
                         }),
-                    Text(damping.toStringAsFixed(2)),
+                    Text("${damping.toStringAsFixed(2)}")
                   ],
                 ),
                 SizedBox(height: 20),
-                AnimatedBuilder(
-                    animation: blockAnimationController,
-                    builder: (context, snapshot) {
-                      return Container(
-                          width: 200,
-                          height: 100,
-                          child: SpringSimulationChart(
-                            simulation: displayedSpringSimulation,
-                            isSpringing: blockIsSpringing,
-                            elapsedTime: blockAnimationController.isAnimating
-                                ? blockAnimationController.lastElapsedDuration
-                                : Duration(),
-                          ));
-                    }),
+                Container(
+                  height: 100,
+                  width: 200,
+                  child: AnimatedBuilder(
+                      animation: blockAnimationController,
+                      builder: (context, snapshot) {
+                        return SpringSimulationChart(
+                          simulation: displayedSpringSimulation,
+                          elapsedTime: blockAnimationController.isAnimating
+                              ? blockAnimationController.lastElapsedDuration
+                              : Duration(),
+                          isSpringing: isSpringing,
+                        );
+                      }),
+                ),
               ],
             )),
         Positioned(
