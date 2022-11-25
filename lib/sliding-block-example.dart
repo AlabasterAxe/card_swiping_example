@@ -33,6 +33,14 @@ class _SlidingBlockExampleState extends State<SlidingBlockExample>
     blockAnimationController.animateWith(nonMovingSimulation);
   }
 
+  void _resetParameters() {
+    setState(() {
+      drag = 1;
+      position = 1;
+      velocity = 100;
+    });
+  }
+
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     return Stack(
@@ -42,33 +50,42 @@ class _SlidingBlockExampleState extends State<SlidingBlockExample>
             top: 0,
             child: Column(
               children: [
-                Slider(
-                    min: 0.0,
-                    max: 2,
-                    value: drag,
-                    onChanged: (val) {
-                      setState(() {
-                        drag = val;
-                      });
-                    }),
-                Slider(
-                    min: 0.0,
-                    max: 80,
-                    value: position,
-                    onChanged: (val) {
-                      setState(() {
-                        position = val;
-                      });
-                    }),
-                Slider(
-                    min: 0.0,
-                    max: 200,
-                    value: velocity,
-                    onChanged: (val) {
-                      setState(() {
-                        velocity = val;
-                      });
-                    })
+                Row(children: [
+                  Text("Drag: ${drag.toStringAsFixed(2)}"),
+                  Slider(
+                      min: 0.0,
+                      max: 2,
+                      value: drag,
+                      onChanged: (val) {
+                        setState(() {
+                          drag = val;
+                        });
+                      }),
+                ]),
+                Row(children: [
+                  Text("Position: ${position.toStringAsFixed(2)}"),
+                  Slider(
+                      min: 0.0,
+                      max: 80,
+                      value: position,
+                      onChanged: (val) {
+                        setState(() {
+                          position = val;
+                        });
+                      }),
+                ]),
+                Row(children: [
+                  Text("Velocity: ${velocity.toStringAsFixed(2)}"),
+                  Slider(
+                      min: 0.0,
+                      max: 200,
+                      value: velocity,
+                      onChanged: (val) {
+                        setState(() {
+                          velocity = val;
+                        });
+                      }),
+                ]),
               ],
             )),
         Positioned(
@@ -96,7 +113,11 @@ class _SlidingBlockExampleState extends State<SlidingBlockExample>
                 Row(children: [
                   ElevatedButton(child: Text("NUDGE"), onPressed: _nudgeBlock),
                   SizedBox(width: 20),
-                  ElevatedButton(child: Text("RESET"), onPressed: _resetBlock),
+                  ElevatedButton(
+                      child: Text("RESET BLOCK"), onPressed: _resetBlock),
+                  SizedBox(width: 20),
+                  ElevatedButton(
+                      child: Text("RESET PARAMS"), onPressed: _resetParameters),
                 ]),
               ],
             ))
