@@ -1,4 +1,4 @@
-package com.example.card_swiping_example
+package com.example.card_swiping_example_1
 
 import io.flutter.embedding.android.FlutterActivity
 

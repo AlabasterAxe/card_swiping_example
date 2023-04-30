@@ -160,11 +160,11 @@ class _SlidingBlockExampleState extends State<SlidingBlockExample>
             child: Column(
               children: [
                 Row(children: [
-                  RaisedButton(child: Text("NUDGE"), onPressed: _nudgeBlock),
+                  ElevatedButton(child: Text("NUDGE"), onPressed: _nudgeBlock),
                   SizedBox(width: 20),
-                  RaisedButton(child: Text("RESET"), onPressed: _resetBlock),
+                  ElevatedButton(child: Text("RESET"), onPressed: _resetBlock),
                   SizedBox(width: 20),
-                  RaisedButton(
+                  ElevatedButton(
                       child: Text("SPRING BACK"), onPressed: _springBack),
                 ]),
               ],
